@@ -20,7 +20,7 @@ def get_raw_week_sleep():
     Pulls raw sleep logs for last seven days, returned as a list of dictionaries
     '''
     week_sleep_data = []
-    week_date_range = (date.today() - timedelta(days = x) for x in xrange(7))
+    week_date_range = (date.today() - timedelta(days=x) for x in xrange(7))
     for day in week_date_range:
         day_sleep_data = authd_client.sleep(date=day)
         week_sleep_data.append(day_sleep_data)
@@ -30,7 +30,7 @@ def get_useful_sleep(raw_data):
     '''
     Accesses main sleep information from sleep logs
     '''
-    return [day['sleep'][0] for day in week_sleep_data]
+    return [day['sleep'][0] for day in week_sleep_data if day['sleep']]
 
 def start_time_convert(start_time):
     '''
@@ -41,9 +41,11 @@ def start_time_convert(start_time):
 
 def start_time_total_seconds(start_time):
     '''
-    Convert '12:23:45' to total seconds for math operations
+    Convert '12:23:45' to total seconds for math operations. Time after 12:00 treated as negative, to center
+    around 00:00
     '''
-    return start_time.hour * 3600 + start_time.minute * 60 + start_time.second
+    return start_time.hour * 3600 + start_time.minute * 60 + start_time.second if start_time <= time(12) else (
+            start_time.hour - 24) * 3600 + start_time.minute * 60 + start_time.second
 
 def seconds_to_time(seconds):
     '''
@@ -60,7 +62,7 @@ def ms_duration_to_hours(duration_seconds):
     '''
     duration_seconds = int(duration_seconds)
     hours, minutes = divmod(duration_seconds, 3600000)
-    minutes,seconds = divmod(minutes, 60000)
+    minutes, seconds = divmod(minutes, 60000)
     seconds = seconds // 1000
     return time(hours,minutes,seconds)
 
